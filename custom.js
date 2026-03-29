@@ -1,6 +1,21 @@
 (function () {
   "use strict";
 
+  // Fix nav: intercept hash link clicks before wouter can hijack them
+  document.addEventListener("click", function (e) {
+    var link = e.target.closest("a[href^='#']");
+    if (!link) return;
+    var hash = link.getAttribute("href");
+    if (!hash || hash === "#") return;
+    var target = document.getElementById(hash.substring(1));
+    if (target) {
+      e.preventDefault();
+      e.stopPropagation();
+      target.scrollIntoView({ behavior: "smooth" });
+      history.replaceState(null, "", hash);
+    }
+  }, true);
+
   function fixGalleryImages() {
     var gallery = document.getElementById("gallery");
     if (!gallery) return;
