@@ -6,21 +6,56 @@
                       document.querySelector("#root > div > div:first-child");
     if (!heroSection) return;
 
-    // Inject a style tag that overrides Framer Motion's inline opacity
-    // This is more stable than MutationObserver which causes flashing
-    var style = document.createElement("style");
-    style.textContent =
-      "#root > div > section:first-of-type img," +
-      "#root > div > section:first-of-type [style*='opacity'] {" +
-      "  opacity: 1 !important;" +
-      "  visibility: visible !important;" +
-      "}" +
-      "#root > div > div:first-child img," +
-      "#root > div > div:first-child [style*='opacity'] {" +
-      "  opacity: 1 !important;" +
-      "  visibility: visible !important;" +
-      "}";
-    document.head.appendChild(style);
+    // Cancel Web Animations API animations that Framer Motion creates
+    // CSS !important cannot override these, must cancel them directly
+    function cancelHeroAnimations() {
+      var els = heroSection.querySelectorAll("*");
+      els.forEach(function (el) {
+        if (typeof el.getAnimations === "function") {
+          var anims = el.getAnimations();
+          anims.forEach(function (a) {
+            // Only cancel opacity/visibility animations, keep transforms for parallax
+            var dominated = false;
+            if (a.effect && a.effect.getKeyframes) {
+              var frames = a.effect.getKeyframes();
+              frames.forEach(function (f) {
+                if ("opacity" in f || "visibility" in f) {
+                  dominated = true;
+                }
+              });
+            }
+            if (dominated) {
+              a.cancel();
+            }
+          });
+        }
+        // Also force inline style
+        if (el.tagName === "IMG" || el.querySelector("img")) {
+          el.style.setProperty("opacity", "1", "important");
+          el.style.setProperty("visibility", "visible", "important");
+        }
+      });
+      // Force images directly
+      heroSection.querySelectorAll("img").forEach(function (img) {
+        img.style.setProperty("opacity", "1", "important");
+        img.style.setProperty("visibility", "visible", "important");
+      });
+    }
+
+    cancelHeroAnimations();
+
+    // Re-run periodically to catch animations Framer Motion creates on scroll
+    var count = 0;
+    var heroFix = setInterval(function () {
+      cancelHeroAnimations();
+      count++;
+      if (count >= 30) clearInterval(heroFix);
+    }, 200);
+
+    // Also catch scroll-triggered re-animations
+    window.addEventListener("scroll", function () {
+      cancelHeroAnimations();
+    }, { passive: true });
   }
 
   function fixGalleryImages() {
