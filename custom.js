@@ -7,7 +7,19 @@
     if (!link) return;
     var hash = link.getAttribute("href");
     if (!hash || hash === "#") return;
-    var target = document.getElementById(hash.substring(1));
+    var targetId = hash.substring(1);
+    // Redirect contact links to the quote form if it exists
+    if (targetId === "contact") {
+      var form = document.querySelector(".quote-form-wrapper");
+      if (form) {
+        e.preventDefault();
+        e.stopPropagation();
+        form.scrollIntoView({ behavior: "smooth" });
+        history.replaceState(null, "", hash);
+        return;
+      }
+    }
+    var target = document.getElementById(targetId);
     if (target) {
       e.preventDefault();
       e.stopPropagation();
