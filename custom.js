@@ -51,6 +51,10 @@
 
         var img = item.querySelector("img");
         if (img) {
+          // Replace the small Client Project webp with local BCS.jpg
+          if (img.src && img.src.indexOf("bcs_kitchen_1") !== -1) {
+            img.src = "/bcs/assets/BCS.jpg";
+          }
           img.style.setProperty("position", "absolute", "important");
           img.style.setProperty("inset", "0", "important");
           img.style.setProperty("width", "100%", "important");
