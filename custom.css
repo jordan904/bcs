@@ -10,15 +10,21 @@
   object-position: center !important;
 }
 
-/* ===== Section Labels: Always block, above heading ===== */
-@media (max-width: 1023px) {
-  span[style*="letterSpacing"][style*="uppercase"],
-  span[style*="letter-spacing"][style*="text-transform"] {
-    display: block !important;
-    width: 100% !important;
-    margin-bottom: 0.25rem !important;
-  }
 
+
+/* ===== Section Labels: stack above heading (match reviews style) ===== */
+.brass-underline {
+  display: block !important;
+}
+
+section span[style*="letter-spacing"][style*="text-transform"],
+section span[style*="letterSpacing"] {
+  display: block !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* ===== Mobile Layout Stacking ===== */
+@media (max-width: 1023px) {
   #about .grid,
   section .grid.items-center {
     display: flex !important;
