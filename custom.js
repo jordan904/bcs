@@ -1,63 +1,6 @@
 (function () {
   "use strict";
 
-  function fixHeroImage() {
-    var heroSection = document.querySelector("#root > div > section:first-of-type") ||
-                      document.querySelector("#root > div > div:first-child");
-    if (!heroSection) return;
-
-    // Cancel Web Animations API animations that Framer Motion creates
-    // CSS !important cannot override these, must cancel them directly
-    function cancelHeroAnimations() {
-      var els = heroSection.querySelectorAll("*");
-      els.forEach(function (el) {
-        if (typeof el.getAnimations === "function") {
-          var anims = el.getAnimations();
-          anims.forEach(function (a) {
-            // Only cancel opacity/visibility animations, keep transforms for parallax
-            var dominated = false;
-            if (a.effect && a.effect.getKeyframes) {
-              var frames = a.effect.getKeyframes();
-              frames.forEach(function (f) {
-                if ("opacity" in f || "visibility" in f) {
-                  dominated = true;
-                }
-              });
-            }
-            if (dominated) {
-              a.cancel();
-            }
-          });
-        }
-        // Also force inline style
-        if (el.tagName === "IMG" || el.querySelector("img")) {
-          el.style.setProperty("opacity", "1", "important");
-          el.style.setProperty("visibility", "visible", "important");
-        }
-      });
-      // Force images directly
-      heroSection.querySelectorAll("img").forEach(function (img) {
-        img.style.setProperty("opacity", "1", "important");
-        img.style.setProperty("visibility", "visible", "important");
-      });
-    }
-
-    cancelHeroAnimations();
-
-    // Re-run periodically to catch animations Framer Motion creates on scroll
-    var count = 0;
-    var heroFix = setInterval(function () {
-      cancelHeroAnimations();
-      count++;
-      if (count >= 30) clearInterval(heroFix);
-    }, 200);
-
-    // Also catch scroll-triggered re-animations
-    window.addEventListener("scroll", function () {
-      cancelHeroAnimations();
-    }, { passive: true });
-  }
-
   function fixGalleryImages() {
     var gallery = document.getElementById("gallery");
     if (!gallery) return;
@@ -72,7 +15,6 @@
 
         var img = item.querySelector("img");
         if (img) {
-          // Replace the small Client Project webp with local BCS.jpg
           if (img.src && img.src.indexOf("bcs_kitchen_1") !== -1) {
             img.src = "/bcs/assets/BCS.jpg";
           }
@@ -193,12 +135,7 @@
     }, 100);
   }
 
-  // Inject hero fix CSS immediately (no need to wait for React)
-  fixHeroImage();
-
-  // Fix everything else once gallery is ready
   waitForApp(function () {
-    fixHeroImage();
     fixGalleryImages();
     removeInstagramLink();
     addQuoteForm();
