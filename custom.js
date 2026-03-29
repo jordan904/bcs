@@ -6,35 +6,21 @@
                       document.querySelector("#root > div > div:first-child");
     if (!heroSection) return;
 
-    function forceVisible() {
-      var imgs = heroSection.querySelectorAll("img");
-      imgs.forEach(function (img) {
-        img.style.setProperty("opacity", "1", "important");
-        img.style.setProperty("visibility", "visible", "important");
-      });
-      var motionDivs = heroSection.querySelectorAll("[style]");
-      motionDivs.forEach(function (div) {
-        if (div.style.opacity !== "" && div.style.opacity !== "1" && div.querySelector("img")) {
-          div.style.setProperty("opacity", "1", "important");
-        }
-      });
-    }
-
-    forceVisible();
-
-    var observer = new MutationObserver(function () {
-      forceVisible();
-    });
-    observer.observe(heroSection, {
-      attributes: true,
-      attributeFilter: ["style"],
-      subtree: true,
-      childList: true
-    });
-
-    setTimeout(function () {
-      observer.disconnect();
-    }, 5000);
+    // Inject a style tag that overrides Framer Motion's inline opacity
+    // This is more stable than MutationObserver which causes flashing
+    var style = document.createElement("style");
+    style.textContent =
+      "#root > div > section:first-of-type img," +
+      "#root > div > section:first-of-type [style*='opacity'] {" +
+      "  opacity: 1 !important;" +
+      "  visibility: visible !important;" +
+      "}" +
+      "#root > div > div:first-child img," +
+      "#root > div > div:first-child [style*='opacity'] {" +
+      "  opacity: 1 !important;" +
+      "  visibility: visible !important;" +
+      "}";
+    document.head.appendChild(style);
   }
 
   function fixGalleryImages() {
@@ -172,14 +158,8 @@
     }, 100);
   }
 
-  // Fix hero ASAP
-  var heroInterval = setInterval(function () {
-    var root = document.getElementById("root");
-    if (root && root.children.length > 0) {
-      clearInterval(heroInterval);
-      fixHeroImage();
-    }
-  }, 50);
+  // Inject hero fix CSS immediately (no need to wait for React)
+  fixHeroImage();
 
   // Fix everything else once gallery is ready
   waitForApp(function () {
